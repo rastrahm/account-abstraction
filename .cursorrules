@@ -1,0 +1,31 @@
+# .cursorrules — Module 12: Account Abstraction (ERC-4337) Smart Accounts
+
+## MODULE OVERVIEW
+Focus on building an ERC-4337 compliant Smart Contract Account, custom Paymaster for gas sponsorship, and Signature Validator using Foundry, Solidity 0.8.24, and low-level calldata unpacking.
+
+---
+
+## 1. TECHNICAL CONSTRAINTS & STACK
+
+- **Compiler Version:** Strictly `pragma solidity 0.8.24;` (no floating pragmas).
+- **Tooling:** Foundry (`forge` for unit testing, UserOperation hash calculation, and Paymaster validation simulations).
+- **Standards:** Strictly adhere to `IAccount`, `IPaymaster`, and `IEntryPoint` interfaces (ERC-4337 v0.6/v0.7 specs).
+- **Signature Scheme:** Support ECDSA over secp256k1 via `userOpHash` and handle signature verification efficiently.
+
+---
+
+## 2. CODING & SECURITY RULES
+
+- **EntryPoint Authorization:** Enforce `msg.sender == address(entryPoint)` on `validateUserOp()` and execution handlers to prevent unauthorized direct invocations.
+- **Paymaster Deposit & Validation:** Implement `validatePaymasterUserOp()` verifying paymaster deposits inside the EntryPoint and checking expiration timestamps/sponsorship rules.
+- **Custom Errors:** Replace `require` strings with custom errors (`error OnlyEntryPoint()`, `error ExecutionFailed()`, `error InvalidUserOpSignature()`, `error PaymasterValidationFailed()`).
+- **Nonce Management:** Track nonces via EntryPoint 2D key-based mapping (`getNonce(address,uint192)`).
+
+---
+
+## 3. TESTING REQUIREMENTS
+
+- **Foundry Unit Tests:** Test end-to-end UserOperation lifecycle (Struct creation -> Signature -> EntryPoint execution -> Paymaster deduction).
+- **Unauthorized Sender Tests:** Assert that calling `validateUserOp` from any account other than EntryPoint explicitly reverts.
+- **Gas Profiling:** Measure execution gas overhead differences between standard ECDSA transactions and UserOp execution.
+- **Fuzzing Tests:** Fuzz UserOp execution targets, calldata payloads, and paymaster deposit bounds.
