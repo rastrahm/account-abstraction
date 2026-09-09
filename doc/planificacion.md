@@ -1,6 +1,6 @@
 # Planificación — Módulo 12: Account Abstraction (ERC-4337)
 
-**Estado:** Fases **0–2** ✅ completadas. Fases **3–6** pendientes.  
+**Estado:** Fases **0–3** ✅ completadas. Fases **4–6** pendientes.  
 **Regla de avance:** cada fase requiere **autorización explícita** del responsable antes de empezar.
 
 ---
@@ -125,7 +125,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 | 0 | Setup Foundry + estructura + deps ERC-4337 | ✅ Completada | ✅ Autorizada |
 | 1 | Interfaces + `UserOperation` + libs de hash | ✅ Completada | ✅ Autorizada |
 | 2 | `SignatureValidator` + owner ECDSA | ✅ Completada | ✅ Autorizada |
-| 3 | `SmartAccount` (`validateUserOp` + execute) | ⏳ Pendiente | ❌ Sin autorizar |
+| 3 | `SmartAccount` (`validateUserOp` + execute) | ✅ Completada | ✅ Autorizada |
 | 4 | `SponsoringPaymaster` (validate + postOp + depósito) | ⏳ Pendiente | ❌ Sin autorizar |
 | 5 | Suite e2e + unauthorized sender + fuzz | ⏳ Pendiente | ❌ Sin autorizar |
 | 6 | Gas profiling + Deploy + NatSpec / SWC hardening | ⏳ Pendiente | ❌ Sin autorizar |
@@ -199,7 +199,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ---
 
-### Fase 3 — SmartAccount
+### Fase 3 — SmartAccount ✅
 
 **Objetivo:** cuenta ERC-4337 con validación y ejecución solo vía EntryPoint.
 
@@ -209,6 +209,14 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 4. Owner / inicialización segura; `immutable` EntryPoint.
 
 **Criterio de salida:** validación + ejecución feliz; unauthorized sender cubierto.
+
+**Hecho (2026-09-09):**
+- `src/account/SmartAccount.sol`: `entryPoint` + `owner` immutable; `validateUserOp`, `execute`, `executeBatch`, depósito/nonce helpers.
+- Auth estricta: solo EntryPoint (ni siquiera el owner en directo) → `OnlyEntryPoint`.
+- Firma vía `SignatureValidator.toValidationData` (soft-fail `SIG_VALIDATION_FAILED`).
+- Prefund: `_payPrefund(missingAccountFunds)`; ejecución fallida → `ExecutionFailed`; batch inválido → `InvalidBatchLength`.
+- Tests: unauthorized (stranger + owner), firma OK/fail, prefund, execute/batch, mock target.
+- **51 PASS** total (`forge test`).
 
 ---
 
@@ -303,6 +311,6 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ## 12. Próximo paso
 
-**Autorizar Fase 3** (`SmartAccount`: `validateUserOp` + `execute` solo vía EntryPoint).
+**Autorizar Fase 4** (`SponsoringPaymaster`: validate + postOp + depósito).
 
 **Nota:** usa `~/.foundry/bin/forge` (o antepón `$HOME/.foundry/bin` al `PATH`); el `forge` de nvm/npm no es Foundry.

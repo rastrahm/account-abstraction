@@ -19,3 +19,6 @@ error PaymasterValidationFailed();
 
 /// @notice Dirección cero donde no está permitida.
 error ZeroAddress();
+
+/// @notice Arrays de `executeBatch` con longitudes inconsistentes.
+error InvalidBatchLength();
