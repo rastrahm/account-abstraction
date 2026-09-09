@@ -1,6 +1,6 @@
 # Planificación — Módulo 12: Account Abstraction (ERC-4337)
 
-**Estado:** Fases **0–6** pendientes. Solo documentación inicial creada.  
+**Estado:** Fase **0** ✅ completada. Fases **1–6** pendientes.  
 **Regla de avance:** cada fase requiere **autorización explícita** del responsable antes de empezar.
 
 ---
@@ -122,7 +122,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 | Fase | Nombre | Estado | Autorización |
 |------|--------|--------|--------------|
-| 0 | Setup Foundry + estructura + deps ERC-4337 | ⏳ Pendiente | ❌ Sin autorizar |
+| 0 | Setup Foundry + estructura + deps ERC-4337 | ✅ Completada | ✅ Autorizada |
 | 1 | Interfaces + `UserOperation` + libs de hash | ⏳ Pendiente | ❌ Sin autorizar |
 | 2 | `SignatureValidator` + owner ECDSA | ⏳ Pendiente | ❌ Sin autorizar |
 | 3 | `SmartAccount` (`validateUserOp` + execute) | ⏳ Pendiente | ❌ Sin autorizar |
@@ -134,7 +134,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ## 7. Detalle por fase
 
-### Fase 0 — Setup Foundry
+### Fase 0 — Setup Foundry ✅
 
 **Objetivo:** repo compilable con tooling y dependencias ERC-4337 fijadas.
 
@@ -144,6 +144,15 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 4. Carpetas `src/{account,paymaster,validation,interfaces,libraries}`, `test/`, `test/fuzz`, `test/gas`, `script/`, `doc/`.
 
 **Criterio de salida:** `forge build` OK; versión ERC-4337 elegida escrita en esta sección.
+
+**Hecho (2026-09-09):**
+- `foundry.toml` (solc `0.8.24`, Cancun, optimizer, fuzz `runs = 1000`) + `remappings.txt`.
+- Dependencias en `lib/` (gitignored): `forge-std`, OpenZeppelin **v5.2.0**, `eth-infinitism/account-abstraction` **v0.7.0** (`PackedUserOperation`, `EntryPoint`, `IAccount`, `IPaymaster`).
+- Spec fijada: **ERC-4337 v0.7** (no v0.6).
+- Carpetas `src/{account,paymaster,validation,interfaces,libraries,errors}`, `test/{fuzz,gas}`, `script/`.
+- Stub `src/Placeholder.sol` + smoke `test/Placeholder.t.sol`.
+- Remappings verificados (`account-abstraction/interfaces/...`).
+- `forge build` y `forge test` en verde (**1 PASS**).
 
 ---
 
@@ -276,6 +285,6 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ## 12. Próximo paso
 
-**Autorizar Fase 0** (setup Foundry + deps ERC-4337) para comenzar el desarrollo.
+**Autorizar Fase 1** (interfaces + `PackedUserOperation` + libs de hash alineadas a EntryPoint v0.7).
 
 **Nota:** usa `~/.foundry/bin/forge` (o antepón `$HOME/.foundry/bin` al `PATH`); el `forge` de nvm/npm no es Foundry.
