@@ -1,6 +1,6 @@
 # Planificación — Módulo 12: Account Abstraction (ERC-4337)
 
-**Estado:** Fases **0–1** ✅ completadas. Fases **2–6** pendientes.  
+**Estado:** Fases **0–2** ✅ completadas. Fases **3–6** pendientes.  
 **Regla de avance:** cada fase requiere **autorización explícita** del responsable antes de empezar.
 
 ---
@@ -124,7 +124,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 |------|--------|--------|--------------|
 | 0 | Setup Foundry + estructura + deps ERC-4337 | ✅ Completada | ✅ Autorizada |
 | 1 | Interfaces + `UserOperation` + libs de hash | ✅ Completada | ✅ Autorizada |
-| 2 | `SignatureValidator` + owner ECDSA | ⏳ Pendiente | ❌ Sin autorizar |
+| 2 | `SignatureValidator` + owner ECDSA | ✅ Completada | ✅ Autorizada |
 | 3 | `SmartAccount` (`validateUserOp` + execute) | ⏳ Pendiente | ❌ Sin autorizar |
 | 4 | `SponsoringPaymaster` (validate + postOp + depósito) | ⏳ Pendiente | ❌ Sin autorizar |
 | 5 | Suite e2e + unauthorized sender + fuzz | ⏳ Pendiente | ❌ Sin autorizar |
@@ -179,7 +179,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ---
 
-### Fase 2 — SignatureValidator
+### Fase 2 — SignatureValidator ✅
 
 **Objetivo:** verificación ECDSA eficiente sobre `userOpHash`.
 
@@ -188,6 +188,14 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 3. NatSpec + custom errors.
 
 **Criterio de salida:** suite de firma en verde (válida / inválida / malformed).
+
+**Hecho (2026-09-09):**
+- `src/validation/SignatureValidator.sol` (library): `recoverSigner`, `isValidSignature`, `validateSignature`, `toValidationData`.
+- ECDSA OZ v5 + `MessageHashUtils.toEthSignedMessageHash` (personal_sign, alineado a SimpleAccount AA).
+- Reverts: `InvalidUserOpSignature`, `ZeroAddress` (owner = 0).
+- Soft-fail ERC-4337 vía `toValidationData` → `SIG_VALIDATION_SUCCESS` / `FAILED`.
+- Tests: válida, wrong signer, wrong hash, malformed, empty, raw hash sin prefijo ETH, e2e con `EntryPoint.getUserOpHash`, fuzz.
+- **32 PASS** total (`forge test`).
 
 ---
 
@@ -295,6 +303,6 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ## 12. Próximo paso
 
-**Autorizar Fase 2** (`SignatureValidator` ECDSA sobre `userOpHash`).
+**Autorizar Fase 3** (`SmartAccount`: `validateUserOp` + `execute` solo vía EntryPoint).
 
 **Nota:** usa `~/.foundry/bin/forge` (o antepón `$HOME/.foundry/bin` al `PATH`); el `forge` de nvm/npm no es Foundry.
