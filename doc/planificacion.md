@@ -1,6 +1,6 @@
 # Planificación — Módulo 12: Account Abstraction (ERC-4337)
 
-**Estado:** Fase **0** ✅ completada. Fases **1–6** pendientes.  
+**Estado:** Fases **0–1** ✅ completadas. Fases **2–6** pendientes.  
 **Regla de avance:** cada fase requiere **autorización explícita** del responsable antes de empezar.
 
 ---
@@ -123,7 +123,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 | Fase | Nombre | Estado | Autorización |
 |------|--------|--------|--------------|
 | 0 | Setup Foundry + estructura + deps ERC-4337 | ✅ Completada | ✅ Autorizada |
-| 1 | Interfaces + `UserOperation` + libs de hash | ⏳ Pendiente | ❌ Sin autorizar |
+| 1 | Interfaces + `UserOperation` + libs de hash | ✅ Completada | ✅ Autorizada |
 | 2 | `SignatureValidator` + owner ECDSA | ⏳ Pendiente | ❌ Sin autorizar |
 | 3 | `SmartAccount` (`validateUserOp` + execute) | ⏳ Pendiente | ❌ Sin autorizar |
 | 4 | `SponsoringPaymaster` (validate + postOp + depósito) | ⏳ Pendiente | ❌ Sin autorizar |
@@ -156,7 +156,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ---
 
-### Fase 1 — Interfaces + UserOperation + hash
+### Fase 1 — Interfaces + UserOperation + hash ✅
 
 **Objetivo:** tipos e interfaces estables para el resto del módulo.
 
@@ -166,6 +166,16 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 4. Tests unitarios del hash / packing si hay lógica propia.
 
 **Criterio de salida:** compilación limpia; hash de UserOp verificable contra referencia EntryPoint.
+
+**Hecho (2026-09-09):**
+- Interfaces módulo: `IAccount`, `IPaymaster`, `IEntryPoint` (heredan eth-infinitism v0.7).
+- Docs `UserOperation.sol` + `UserOperationDocs.SPEC` = `ERC-4337-v0.7-PackedUserOperation`.
+- `UserOperationLib`: pack gas/paymaster, `encode`/`hash`/`getUserOpHash` ≡ `EntryPoint.getUserOpHash`.
+- `ValidationDataLib`: pack/parse ≡ `Helpers.sol` AA.
+- `AccountAbstractionErrors` (custom errors del módulo).
+- Tests: `UserOperationLib.t.sol` + `ValidationDataLib.t.sol` (incluye fuzz 1000 vs EntryPoint real).
+- Stub `Placeholder` eliminado.
+- **14 PASS** (`forge test`).
 
 ---
 
@@ -285,6 +295,6 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ## 12. Próximo paso
 
-**Autorizar Fase 1** (interfaces + `PackedUserOperation` + libs de hash alineadas a EntryPoint v0.7).
+**Autorizar Fase 2** (`SignatureValidator` ECDSA sobre `userOpHash`).
 
 **Nota:** usa `~/.foundry/bin/forge` (o antepón `$HOME/.foundry/bin` al `PATH`); el `forge` de nvm/npm no es Foundry.
