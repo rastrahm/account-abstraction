@@ -1,6 +1,6 @@
 # Planificación — Módulo 12: Account Abstraction (ERC-4337)
 
-**Estado:** Fases **0–6** pendientes. Solo documentación inicial creada.  
+**Estado:** Fases **0–4** ✅ completadas. Fases **5–6** pendientes.  
 **Regla de avance:** cada fase requiere **autorización explícita** del responsable antes de empezar.
 
 ---
@@ -122,11 +122,11 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 | Fase | Nombre | Estado | Autorización |
 |------|--------|--------|--------------|
-| 0 | Setup Foundry + estructura + deps ERC-4337 | ⏳ Pendiente | ❌ Sin autorizar |
-| 1 | Interfaces + `UserOperation` + libs de hash | ⏳ Pendiente | ❌ Sin autorizar |
-| 2 | `SignatureValidator` + owner ECDSA | ⏳ Pendiente | ❌ Sin autorizar |
-| 3 | `SmartAccount` (`validateUserOp` + execute) | ⏳ Pendiente | ❌ Sin autorizar |
-| 4 | `SponsoringPaymaster` (validate + postOp + depósito) | ⏳ Pendiente | ❌ Sin autorizar |
+| 0 | Setup Foundry + estructura + deps ERC-4337 | ✅ Completada | ✅ Autorizada |
+| 1 | Interfaces + `UserOperation` + libs de hash | ✅ Completada | ✅ Autorizada |
+| 2 | `SignatureValidator` + owner ECDSA | ✅ Completada | ✅ Autorizada |
+| 3 | `SmartAccount` (`validateUserOp` + execute) | ✅ Completada | ✅ Autorizada |
+| 4 | `SponsoringPaymaster` (validate + postOp + depósito) | ✅ Completada | ✅ Autorizada |
 | 5 | Suite e2e + unauthorized sender + fuzz | ⏳ Pendiente | ❌ Sin autorizar |
 | 6 | Gas profiling + Deploy + NatSpec / SWC hardening | ⏳ Pendiente | ❌ Sin autorizar |
 
@@ -134,7 +134,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ## 7. Detalle por fase
 
-### Fase 0 — Setup Foundry
+### Fase 0 — Setup Foundry ✅
 
 **Objetivo:** repo compilable con tooling y dependencias ERC-4337 fijadas.
 
@@ -145,9 +145,18 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 **Criterio de salida:** `forge build` OK; versión ERC-4337 elegida escrita en esta sección.
 
+**Hecho (2026-09-09):**
+- `foundry.toml` (solc `0.8.24`, Cancun, optimizer, fuzz `runs = 1000`) + `remappings.txt`.
+- Dependencias en `lib/` (gitignored): `forge-std`, OpenZeppelin **v5.2.0**, `eth-infinitism/account-abstraction` **v0.7.0** (`PackedUserOperation`, `EntryPoint`, `IAccount`, `IPaymaster`).
+- Spec fijada: **ERC-4337 v0.7** (no v0.6).
+- Carpetas `src/{account,paymaster,validation,interfaces,libraries,errors}`, `test/{fuzz,gas}`, `script/`.
+- Stub `src/Placeholder.sol` + smoke `test/Placeholder.t.sol`.
+- Remappings verificados (`account-abstraction/interfaces/...`).
+- `forge build` y `forge test` en verde (**1 PASS**).
+
 ---
 
-### Fase 1 — Interfaces + UserOperation + hash
+### Fase 1 — Interfaces + UserOperation + hash ✅
 
 **Objetivo:** tipos e interfaces estables para el resto del módulo.
 
@@ -158,9 +167,19 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 **Criterio de salida:** compilación limpia; hash de UserOp verificable contra referencia EntryPoint.
 
+**Hecho (2026-09-09):**
+- Interfaces módulo: `IAccount`, `IPaymaster`, `IEntryPoint` (heredan eth-infinitism v0.7).
+- Docs `UserOperation.sol` + `UserOperationDocs.SPEC` = `ERC-4337-v0.7-PackedUserOperation`.
+- `UserOperationLib`: pack gas/paymaster, `encode`/`hash`/`getUserOpHash` ≡ `EntryPoint.getUserOpHash`.
+- `ValidationDataLib`: pack/parse ≡ `Helpers.sol` AA.
+- `AccountAbstractionErrors` (custom errors del módulo).
+- Tests: `UserOperationLib.t.sol` + `ValidationDataLib.t.sol` (incluye fuzz 1000 vs EntryPoint real).
+- Stub `Placeholder` eliminado.
+- **14 PASS** (`forge test`).
+
 ---
 
-### Fase 2 — SignatureValidator
+### Fase 2 — SignatureValidator ✅
 
 **Objetivo:** verificación ECDSA eficiente sobre `userOpHash`.
 
@@ -170,9 +189,17 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 **Criterio de salida:** suite de firma en verde (válida / inválida / malformed).
 
+**Hecho (2026-09-09):**
+- `src/validation/SignatureValidator.sol` (library): `recoverSigner`, `isValidSignature`, `validateSignature`, `toValidationData`.
+- ECDSA OZ v5 + `MessageHashUtils.toEthSignedMessageHash` (personal_sign, alineado a SimpleAccount AA).
+- Reverts: `InvalidUserOpSignature`, `ZeroAddress` (owner = 0).
+- Soft-fail ERC-4337 vía `toValidationData` → `SIG_VALIDATION_SUCCESS` / `FAILED`.
+- Tests: válida, wrong signer, wrong hash, malformed, empty, raw hash sin prefijo ETH, e2e con `EntryPoint.getUserOpHash`, fuzz.
+- **32 PASS** total (`forge test`).
+
 ---
 
-### Fase 3 — SmartAccount
+### Fase 3 — SmartAccount ✅
 
 **Objetivo:** cuenta ERC-4337 con validación y ejecución solo vía EntryPoint.
 
@@ -183,9 +210,17 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 **Criterio de salida:** validación + ejecución feliz; unauthorized sender cubierto.
 
+**Hecho (2026-09-09):**
+- `src/account/SmartAccount.sol`: `entryPoint` + `owner` immutable; `validateUserOp`, `execute`, `executeBatch`, depósito/nonce helpers.
+- Auth estricta: solo EntryPoint (ni siquiera el owner en directo) → `OnlyEntryPoint`.
+- Firma vía `SignatureValidator.toValidationData` (soft-fail `SIG_VALIDATION_FAILED`).
+- Prefund: `_payPrefund(missingAccountFunds)`; ejecución fallida → `ExecutionFailed`; batch inválido → `InvalidBatchLength`.
+- Tests: unauthorized (stranger + owner), firma OK/fail, prefund, execute/batch, mock target.
+- **51 PASS** total (`forge test`).
+
 ---
 
-### Fase 4 — SponsoringPaymaster
+### Fase 4 — SponsoringPaymaster ✅
 
 **Objetivo:** patrocinio de gas con reglas explícitas.
 
@@ -195,6 +230,14 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 4. Funciones admin (deposit/withdraw/stake) con access control.
 
 **Criterio de salida:** UserOp patrocinada OK; caminos de rechazo en verde.
+
+**Hecho (2026-09-10):**
+- `src/paymaster/SponsoringPaymaster.sol`: whitelist, `maxCostPerOp`, ventana `validUntil`/`validAfter` en `paymasterAndData`, depósito EP, `postOp` + `totalSponsoredGasCost`.
+- Auth: validate/postOp solo EntryPoint → `OnlyEntryPoint`; admin con `Ownable2Step`.
+- Rechazos unificados → `PaymasterValidationFailed` (no whitelist, depósito, tope, tiempo, layout).
+- Admin: `deposit`, `withdrawTo`, `addStake`, `unlockStake`, `withdrawStake`.
+- Tests unitarios + fuzz de `maxCostPerOp` / depósito.
+- **70 PASS** total (`forge test`).
 
 ---
 
@@ -276,6 +319,6 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ## 12. Próximo paso
 
-**Autorizar Fase 0** (setup Foundry + deps ERC-4337) para comenzar el desarrollo.
+**Autorizar Fase 5** (suite e2e UserOp + unauthorized + fuzz).
 
 **Nota:** usa `~/.foundry/bin/forge` (o antepón `$HOME/.foundry/bin` al `PATH`); el `forge` de nvm/npm no es Foundry.

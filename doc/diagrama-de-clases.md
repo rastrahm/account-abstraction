@@ -28,8 +28,8 @@ classDiagram
         +postOp(mode, context, actualGasCost)
     }
 
-    class UserOperation {
-        <<struct>>
+    class PackedUserOperation {
+        <<struct v0.7>>
         +address sender
         +uint256 nonce
         +bytes initCode
@@ -86,9 +86,9 @@ classDiagram
     SmartAccount --> IEntryPoint : only callable by
     SponsoringPaymaster --> IEntryPoint : deposit / validate via
     SmartAccount --> SignatureValidator : uses
-    SmartAccount ..> UserOperation : validates
-    SponsoringPaymaster ..> UserOperation : sponsors
-    UserOperationLib ..> UserOperation : hashes
+    SmartAccount ..> PackedUserOperation : validates
+    SponsoringPaymaster ..> PackedUserOperation : sponsors
+    UserOperationLib ..> PackedUserOperation : hashes
     IEntryPoint ..> IAccount : validateUserOp
     IEntryPoint ..> IPaymaster : validatePaymasterUserOp / postOp
 ```
@@ -110,6 +110,7 @@ classDiagram
 ## Notas de diseño
 
 - `entryPoint` y (si aplica) `owner` iniciales como `immutable` / set-once para gas y seguridad.
-- La forma exacta del struct (`UserOperation` vs `PackedUserOperation`) se fija en **Fase 0/1** según la versión ERC-4337 elegida.
+- Spec fijada: **ERC-4337 v0.7** — struct `PackedUserOperation` (no el UserOp “unpacked” de v0.6).
 - `SignatureValidator` puede ser library pura o contrato helper; preferir library si no necesita estado.
 - Errores del módulo: `OnlyEntryPoint`, `ExecutionFailed`, `InvalidUserOpSignature`, `PaymasterValidationFailed`.
+- Fase 1: `UserOperationLib.getUserOpHash` ≡ `EntryPoint.getUserOpHash`.
