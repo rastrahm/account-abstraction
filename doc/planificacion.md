@@ -1,6 +1,6 @@
 # Planificación — Módulo 12: Account Abstraction (ERC-4337)
 
-**Estado:** Fases **0–3** ✅ completadas. Fases **4–6** pendientes.  
+**Estado:** Fases **0–4** ✅ completadas. Fases **5–6** pendientes.  
 **Regla de avance:** cada fase requiere **autorización explícita** del responsable antes de empezar.
 
 ---
@@ -126,7 +126,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 | 1 | Interfaces + `UserOperation` + libs de hash | ✅ Completada | ✅ Autorizada |
 | 2 | `SignatureValidator` + owner ECDSA | ✅ Completada | ✅ Autorizada |
 | 3 | `SmartAccount` (`validateUserOp` + execute) | ✅ Completada | ✅ Autorizada |
-| 4 | `SponsoringPaymaster` (validate + postOp + depósito) | ⏳ Pendiente | ❌ Sin autorizar |
+| 4 | `SponsoringPaymaster` (validate + postOp + depósito) | ✅ Completada | ✅ Autorizada |
 | 5 | Suite e2e + unauthorized sender + fuzz | ⏳ Pendiente | ❌ Sin autorizar |
 | 6 | Gas profiling + Deploy + NatSpec / SWC hardening | ⏳ Pendiente | ❌ Sin autorizar |
 
@@ -220,7 +220,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ---
 
-### Fase 4 — SponsoringPaymaster
+### Fase 4 — SponsoringPaymaster ✅
 
 **Objetivo:** patrocinio de gas con reglas explícitas.
 
@@ -230,6 +230,14 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 4. Funciones admin (deposit/withdraw/stake) con access control.
 
 **Criterio de salida:** UserOp patrocinada OK; caminos de rechazo en verde.
+
+**Hecho (2026-09-10):**
+- `src/paymaster/SponsoringPaymaster.sol`: whitelist, `maxCostPerOp`, ventana `validUntil`/`validAfter` en `paymasterAndData`, depósito EP, `postOp` + `totalSponsoredGasCost`.
+- Auth: validate/postOp solo EntryPoint → `OnlyEntryPoint`; admin con `Ownable2Step`.
+- Rechazos unificados → `PaymasterValidationFailed` (no whitelist, depósito, tope, tiempo, layout).
+- Admin: `deposit`, `withdrawTo`, `addStake`, `unlockStake`, `withdrawStake`.
+- Tests unitarios + fuzz de `maxCostPerOp` / depósito.
+- **70 PASS** total (`forge test`).
 
 ---
 
@@ -311,6 +319,6 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ## 12. Próximo paso
 
-**Autorizar Fase 4** (`SponsoringPaymaster`: validate + postOp + depósito).
+**Autorizar Fase 5** (suite e2e UserOp + unauthorized + fuzz).
 
 **Nota:** usa `~/.foundry/bin/forge` (o antepón `$HOME/.foundry/bin` al `PATH`); el `forge` de nvm/npm no es Foundry.
