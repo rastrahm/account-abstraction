@@ -1,6 +1,6 @@
 # Planificación — Módulo 12: Account Abstraction (ERC-4337)
 
-**Estado:** Fases **0–4** ✅ completadas. Fases **5–6** pendientes.  
+**Estado:** Fases **0–5** ✅ completadas. Fase **6** pendiente.  
 **Regla de avance:** cada fase requiere **autorización explícita** del responsable antes de empezar.
 
 ---
@@ -127,7 +127,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 | 2 | `SignatureValidator` + owner ECDSA | ✅ Completada | ✅ Autorizada |
 | 3 | `SmartAccount` (`validateUserOp` + execute) | ✅ Completada | ✅ Autorizada |
 | 4 | `SponsoringPaymaster` (validate + postOp + depósito) | ✅ Completada | ✅ Autorizada |
-| 5 | Suite e2e + unauthorized sender + fuzz | ⏳ Pendiente | ❌ Sin autorizar |
+| 5 | Suite e2e + unauthorized sender + fuzz | ✅ Completada | ✅ Autorizada |
 | 6 | Gas profiling + Deploy + NatSpec / SWC hardening | ⏳ Pendiente | ❌ Sin autorizar |
 
 ---
@@ -241,7 +241,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ---
 
-### Fase 5 — Suite e2e + unauthorized + fuzz
+### Fase 5 — Suite e2e + unauthorized + fuzz ✅
 
 **Objetivo:** requisitos de testing del `.cursorrules` del módulo.
 
@@ -252,6 +252,13 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 | Fuzz | targets, calldata, bounds de depósito Paymaster |
 
 **Criterio de salida:** `forge test` verde; fuzz ≥ 1000 runs sin fallos inesperados.
+
+**Hecho (2026-09-10):**
+- `test/helpers/UserOpTestBase.sol` — build/sign/`handleOps` compartido.
+- `test/UserOpE2E.t.sol` — sin/con paymaster, AA24/AA25, ejecución revertida, whitelist/depósito PM, value, nonce.
+- `test/UnauthorizedSender.t.sol` — Account + Paymaster solo EntryPoint.
+- `test/fuzz/UserOp.fuzz.t.sol` — setValue/transfer/paymaster/depósito/targets (1000 runs c/u).
+- **91 PASS** total (`forge test`).
 
 ---
 
@@ -282,13 +289,14 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ## 9. Seguridad (checklist vivo)
 
-- [ ] `msg.sender == entryPoint` en validación y ejecución.
-- [ ] ECDSA sobre `userOpHash` canónico (sin malleability trivial mal manejada).
-- [ ] Paymaster verifica depósito / stake según spec y reglas de negocio.
-- [ ] Timestamps / `validUntil`–`validAfter` respetados.
-- [ ] Custom errors del módulo.
-- [ ] Sin floating pragma; NatSpec en APIs públicas.
-- [ ] Suite unauthorized + fuzz + gas + (Fase 6) SWC-AUDIT.
+- [x] `msg.sender == entryPoint` en validación y ejecución.
+- [x] ECDSA sobre `userOpHash` canónico (sin malleability trivial mal manejada).
+- [x] Paymaster verifica depósito / stake según spec y reglas de negocio.
+- [x] Timestamps / `validUntil`–`validAfter` respetados.
+- [x] Custom errors del módulo.
+- [x] Sin floating pragma; NatSpec en APIs públicas.
+- [x] Suite unauthorized + fuzz.
+- [ ] Gas profiling + (Fase 6) SWC-AUDIT.
 
 ---
 
@@ -319,6 +327,6 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ## 12. Próximo paso
 
-**Autorizar Fase 5** (suite e2e UserOp + unauthorized + fuzz).
+**Autorizar Fase 6** (gas profiling + Deploy + NatSpec / SWC hardening).
 
 **Nota:** usa `~/.foundry/bin/forge` (o antepón `$HOME/.foundry/bin` al `PATH`); el `forge` de nvm/npm no es Foundry.
