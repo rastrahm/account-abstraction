@@ -1,0 +1,6 @@
+UserOpGasTest:testGas_EOA_setValue() (gas: 54582)
+UserOpGasTest:testGas_UserOp_setValue() (gas: 159870)
+UserOpGasTest:testGas_UserOp_withPaymaster_setValue() (gas: 199504)
+UserOpGasTest:testGas_execute_only() (gas: 61018)
+UserOpGasTest:testGas_validatePaymasterUserOp_only() (gas: 40005)
+UserOpGasTest:testGas_validateUserOp_only() (gas: 36060)

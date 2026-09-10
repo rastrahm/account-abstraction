@@ -1,6 +1,6 @@
 # Diagrama de clases — Account Abstraction (ERC-4337)
 
-Vista estructural de contratos, interfaces y relaciones (módulo 12).
+Vista estructural de contratos, interfaces y relaciones (módulo 12, **v1 final**).
 
 ## Diagrama (Mermaid)
 
@@ -9,12 +9,13 @@ classDiagram
     direction TB
 
     class IEntryPoint {
-        <<interface>>
+        <<interface AA v0.7>>
         +handleOps(ops, beneficiary)
         +getUserOpHash(userOp) bytes32
         +getNonce(sender, key) uint256
         +depositTo(account)
         +balanceOf(account) uint256
+        +withdrawTo(withdrawAddress, amount)
     }
 
     class IAccount {
@@ -25,7 +26,7 @@ classDiagram
     class IPaymaster {
         <<interface>>
         +validatePaymasterUserOp(userOp, userOpHash, maxCost) context_validationData
-        +postOp(mode, context, actualGasCost)
+        +postOp(mode, context, actualGasCost, actualUserOpFeePerGas)
     }
 
     class PackedUserOperation {
@@ -42,43 +43,58 @@ classDiagram
     }
 
     class SignatureValidator {
-        <<library_or_contract>>
-        +isValidSignature(userOpHash, signature, owner) bool
+        <<library>>
         +recoverSigner(userOpHash, signature) address
+        +isValidSignature(userOpHash, signature, owner) bool
+        +validateSignature(userOpHash, signature, owner)
+        +toValidationData(userOpHash, signature, owner) uint256
     }
 
     class SmartAccount {
         <<contract>>
-        -address owner
-        -IEntryPoint entryPoint
+        +IEntryPoint entryPoint$
+        +address owner$
         +constructor(entryPoint, owner)
         +validateUserOp(userOp, userOpHash, missingAccountFunds) uint256
         +execute(target, value, data)
         +executeBatch(targets, values, datas)
-        +entryPoint() IEntryPoint
-        -_requireFromEntryPoint()
-        -_validateSignature(userOpHash, signature) uint256
+        +addDeposit()
+        +withdrawDepositTo(withdrawAddress, amount)
+        +getNonce() uint256
+        +getDeposit() uint256
     }
 
     class SponsoringPaymaster {
-        <<contract>>
-        -address owner
-        -IEntryPoint entryPoint
-        -uint48 validUntilDefault
+        <<contract Ownable2Step>>
+        +IEntryPoint entryPoint$
+        +uint256 maxCostPerOp
+        +uint256 totalSponsoredGasCost
+        +mapping isSponsored
         +constructor(entryPoint)
+        +setSponsored(account, allowed)
+        +setMaxCostPerOp(maxCostPerOp)
         +validatePaymasterUserOp(userOp, userOpHash, maxCost) context_validationData
-        +postOp(mode, context, actualGasCost)
+        +postOp(mode, context, actualGasCost, feePerGas)
         +deposit()
         +withdrawTo(withdrawAddress, amount)
         +addStake(unstakeDelaySec)
-        -_requireFromEntryPoint()
-        -_validateSponsorship(userOp, maxCost)
     }
 
     class UserOperationLib {
         <<library>>
+        +packAccountGasLimits(verGas, callGas) bytes32
+        +packGasFees(priority, maxFee) bytes32
+        +packPaymasterAndData(...) bytes
         +hash(userOp) bytes32
-        +getSender(userOp) address
+        +getUserOpHash(userOp, entryPoint, chainId) bytes32
+    }
+
+    class ValidationDataLib {
+        <<library>>
+        +SIG_VALIDATION_SUCCESS$
+        +SIG_VALIDATION_FAILED$
+        +pack(sigFailed, validUntil, validAfter) uint256
+        +parse(validationData) aggregator_after_until
     }
 
     IAccount <|.. SmartAccount : implements
@@ -86,9 +102,10 @@ classDiagram
     SmartAccount --> IEntryPoint : only callable by
     SponsoringPaymaster --> IEntryPoint : deposit / validate via
     SmartAccount --> SignatureValidator : uses
+    SignatureValidator --> ValidationDataLib : toValidationData
     SmartAccount ..> PackedUserOperation : validates
     SponsoringPaymaster ..> PackedUserOperation : sponsors
-    UserOperationLib ..> PackedUserOperation : hashes
+    UserOperationLib ..> PackedUserOperation : hashes / packs
     IEntryPoint ..> IAccount : validateUserOp
     IEntryPoint ..> IPaymaster : validatePaymasterUserOp / postOp
 ```
@@ -99,18 +116,18 @@ classDiagram
 
 | Relación | Tipo | Nota |
 |----------|------|------|
-| `SmartAccount` → `IAccount` | implementación | Contrato de cuenta ERC-4337 |
+| `SmartAccount` → `IAccount` | implementación | Cuenta ERC-4337 v0.7 |
 | `SponsoringPaymaster` → `IPaymaster` | implementación | Patrocinio de gas |
-| `SmartAccount` / `Paymaster` → `IEntryPoint` | dependencia + auth | Solo EntryPoint puede invocar validación/ejecución/`postOp` |
-| `SmartAccount` → `SignatureValidator` | uso | ECDSA sobre `userOpHash` |
-| `IEntryPoint` → Account / Paymaster | orquestación | `handleOps` dispara el ciclo completo |
+| Account / Paymaster → `IEntryPoint` | auth + deps | Solo EntryPoint invoca validate/execute/postOp |
+| `SmartAccount` → `SignatureValidator` | library | ECDSA sobre `userOpHash` |
+| `UserOperationLib` → EntryPoint hash | compatibilidad | `getUserOpHash` ≡ EP |
 
 ---
 
-## Notas de diseño
+## Notas de diseño (v1)
 
-- `entryPoint` y (si aplica) `owner` iniciales como `immutable` / set-once para gas y seguridad.
-- Spec fijada: **ERC-4337 v0.7** — struct `PackedUserOperation` (no el UserOp “unpacked” de v0.6).
-- `SignatureValidator` puede ser library pura o contrato helper; preferir library si no necesita estado.
-- Errores del módulo: `OnlyEntryPoint`, `ExecutionFailed`, `InvalidUserOpSignature`, `PaymasterValidationFailed`.
-- Fase 1: `UserOperationLib.getUserOpHash` ≡ `EntryPoint.getUserOpHash`.
+- `entryPoint` y `owner` (cuenta) / `entryPoint` (PM) son **immutable**.
+- Spec: **ERC-4337 v0.7** — `PackedUserOperation`.
+- `SignatureValidator` es **library** (sin estado).
+- Errores: `OnlyEntryPoint`, `ExecutionFailed`, `InvalidUserOpSignature`, `PaymasterValidationFailed`, `ZeroAddress`, `InvalidBatchLength`.
+- Paymaster admin: OpenZeppelin `Ownable2Step`.

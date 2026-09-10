@@ -78,4 +78,10 @@ contract UnauthorizedSenderTest is UserOpTestBase {
         vm.expectRevert(OnlyEntryPoint.selector);
         paymaster.postOp(ERC4337Paymaster.PostOpMode.opSucceeded, context, 0.01 ether, 1 gwei);
     }
+
+    function test_attack_withdrawDepositTo_fromStranger_reverts() public {
+        vm.prank(stranger);
+        vm.expectRevert(OnlyEntryPoint.selector);
+        account.withdrawDepositTo(payable(stranger), 1 ether);
+    }
 }

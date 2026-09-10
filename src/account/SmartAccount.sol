@@ -71,6 +71,19 @@ contract SmartAccount is IAccount {
     }
 
     /**
+     * @notice Retira depósito de esta cuenta en el EntryPoint (solo vía EntryPoint / UserOp).
+     * @param withdrawAddress Destino del ETH.
+     * @param amount Cantidad a retirar.
+     */
+    function withdrawDepositTo(address payable withdrawAddress, uint256 amount) external {
+        _requireFromEntryPoint();
+        if (withdrawAddress == address(0)) {
+            revert ZeroAddress();
+        }
+        entryPoint.withdrawTo(withdrawAddress, amount);
+    }
+
+    /**
      * @notice Valida firma y paga prefund faltante (solo EntryPoint).
      * @param userOp UserOp packed v0.7.
      * @param userOpHash Hash canónico del EntryPoint.
