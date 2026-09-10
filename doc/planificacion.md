@@ -1,6 +1,6 @@
 # Planificación — Módulo 12: Account Abstraction (ERC-4337)
 
-**Estado:** Fases **0–5** ✅ completadas. Fase **6** pendiente.  
+**Estado:** Fases **0–6** ✅ completadas. Módulo cerrado a nivel de planificación v1.  
 **Regla de avance:** cada fase requiere **autorización explícita** del responsable antes de empezar.
 
 ---
@@ -43,57 +43,70 @@ Construir un stack ERC-4337 de nivel producción con:
 
 ### Módulo 12 (ERC-4337)
 
-- Interfaces: `IAccount`, `IPaymaster`, `IEntryPoint` (spec v0.6 / v0.7 según dependencia fijada en Fase 0).
-- Autorización: `msg.sender == address(entryPoint)` en `validateUserOp` y handlers de ejecución.
-- Firma: ECDSA secp256k1 sobre `userOpHash`; fallo → `InvalidUserOpSignature`.
-- Paymaster: `validatePaymasterUserOp` verifica depósito en EntryPoint + timestamp/reglas; fallo → `PaymasterValidationFailed`.
-- Nonces: gestión vía EntryPoint 2D (`getNonce(address,uint192)`), no inventar contador paralelo conflictivo.
+- Spec fijada: **ERC-4337 v0.7** (`PackedUserOperation`, eth-infinitism `account-abstraction@v0.7.0`).
+- Interfaces módulo: `IAccount`, `IPaymaster`, `IEntryPoint` (aliases tipados sobre AA).
+- Autorización: `msg.sender == address(entryPoint)` en `validateUserOp`, `execute`/`executeBatch`, `withdrawDepositTo`, `validatePaymasterUserOp` y `postOp`.
+- Firma: ECDSA secp256k1 sobre `userOpHash` + prefijo eth-signed; soft-fail → `SIG_VALIDATION_FAILED`.
+- Paymaster: depósito EP + whitelist + `maxCostPerOp` + `validUntil`/`validAfter`; fallo → `PaymasterValidationFailed`.
+- Nonces: EntryPoint 2D (`getNonce(address,uint192)`).
 - Ejecución fallida → `ExecutionFailed`; caller no-EntryPoint → `OnlyEntryPoint`.
 
 ---
 
-## 4. Arquitectura prevista
+## 4. Arquitectura (final v1)
 
 ```
 12-account-abstraction/
-├── doc/                              ← planificación y diagramas (esta carpeta)
+├── README.md
+├── doc/
+│   ├── README.md                     # índice de documentación
+│   ├── planificacion.md
+│   ├── diagrama-de-clases.md
+│   ├── diagrama-de-flujo.md
+│   ├── flujograma.md
+│   ├── SWC-AUDIT.md
+│   └── GAS.md
 ├── src/
-│   ├── account/
-│   │   └── SmartAccount.sol          # IAccount: validateUserOp + execute
-│   ├── paymaster/
-│   │   └── SponsoringPaymaster.sol   # IPaymaster: validate + postOp
-│   ├── validation/
-│   │   └── SignatureValidator.sol    # ECDSA / userOpHash helpers
+│   ├── account/SmartAccount.sol
+│   ├── paymaster/SponsoringPaymaster.sol
+│   ├── validation/SignatureValidator.sol
+│   ├── libraries/
+│   │   ├── UserOperationLib.sol
+│   │   └── ValidationDataLib.sol
 │   ├── interfaces/
 │   │   ├── IAccount.sol
 │   │   ├── IPaymaster.sol
 │   │   ├── IEntryPoint.sol
-│   │   └── UserOperation.sol         # struct PackedUserOperation / UserOperation
-│   └── libraries/
-│       └── UserOperationLib.sol      # hash / pack / unpack (opcional)
+│   │   └── UserOperation.sol
+│   ├── errors/AccountAbstractionErrors.sol
+│   └── mocks/MockTarget.sol
 ├── test/
+│   ├── helpers/UserOpTestBase.sol
+│   ├── UserOperationLib.t.sol
+│   ├── ValidationDataLib.t.sol
+│   ├── SignatureValidator.t.sol
 │   ├── SmartAccount.t.sol
-│   ├── Paymaster.t.sol
+│   ├── SponsoringPaymaster.t.sol
 │   ├── UserOpE2E.t.sol
 │   ├── UnauthorizedSender.t.sol
-│   ├── gas/UserOp.gas.t.sol
-│   └── fuzz/UserOp.fuzz.t.sol
-├── script/
-│   └── Deploy.s.sol
+│   ├── fuzz/UserOp.fuzz.t.sol
+│   └── gas/UserOp.gas.t.sol
+├── script/Deploy.s.sol
 ├── foundry.toml
-└── remappings.txt
+├── remappings.txt
+└── .gas-snapshot
 ```
 
 ### Contratos y responsabilidades
 
 | Contrato / artefacto | Responsabilidad |
 |----------------------|-----------------|
-| `SmartAccount` | Valida UserOp (firma + nonce vía EP); ejecuta call(s) solo si llama EntryPoint |
-| `SignatureValidator` | Recupera signer desde `userOpHash` + signature; compara con owner |
-| `SponsoringPaymaster` | Decide sponsorship; exige depósito EP; `postOp` para liquidación/contabilidad |
-| `IEntryPoint` (dep) | Orquesta simulación, validación, ejecución y cobro de gas |
-| `UserOperation` / lib | Struct + hash canónico del UserOp |
-
+| `SmartAccount` | Valida UserOp (firma); ejecuta calls; depósitos EP; solo EntryPoint |
+| `SignatureValidator` | ECDSA recover / validate / `toValidationData` |
+| `SponsoringPaymaster` | Whitelist + depósito + ventana temporal; `postOp` contable |
+| `UserOperationLib` | Pack gas/paymaster; `getUserOpHash` ≡ EntryPoint |
+| `ValidationDataLib` | Pack/parse `validationData` (Helpers AA) |
+| `EntryPoint` (dep) | `handleOps`, nonces 2D, cobro de gas |
 ---
 
 ## 5. Errores custom (obligatorios del módulo)
@@ -103,9 +116,11 @@ error OnlyEntryPoint();
 error ExecutionFailed();
 error InvalidUserOpSignature();
 error PaymasterValidationFailed();
+error ZeroAddress();
+error InvalidBatchLength();
 ```
 
-Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `InsufficientPaymasterDeposit()`), siempre como custom errors.
+Ampliar solo si hace falta, siempre como custom errors.
 
 ---
 
@@ -128,7 +143,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 | 3 | `SmartAccount` (`validateUserOp` + execute) | ✅ Completada | ✅ Autorizada |
 | 4 | `SponsoringPaymaster` (validate + postOp + depósito) | ✅ Completada | ✅ Autorizada |
 | 5 | Suite e2e + unauthorized sender + fuzz | ✅ Completada | ✅ Autorizada |
-| 6 | Gas profiling + Deploy + NatSpec / SWC hardening | ⏳ Pendiente | ❌ Sin autorizar |
+| 6 | Gas profiling + Deploy + NatSpec / SWC hardening | ✅ Completada | ✅ Autorizada |
 
 ---
 
@@ -262,13 +277,20 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 ---
 
-### Fase 6 — Gas + Deploy + hardening
+### Fase 6 — Gas + Deploy + hardening ✅
 
 1. `script/Deploy.s.sol` (Account + Paymaster + funding EP).
 2. `test/gas/UserOp.gas.t.sol`: overhead UserOp vs tx ECDSA EOA (órdenes de magnitud / deltas).
 3. NatSpec completo; `doc/SWC-AUDIT.md` y `doc/GAS.md` al estilo de módulos previos.
 
 **Criterio de salida:** deploy local reproducible + docs de seguridad + gas documentado.
+
+**Hecho (2026-09-10):**
+- `script/Deploy.s.sol` — EntryPoint (o `ENTRY_POINT` env), SmartAccount, SponsoringPaymaster, whitelist + depósitos.
+- `test/gas/UserOp.gas.t.sol` + `.gas-snapshot` — EOA ~55k vs UserOp ~160k vs UserOp+PM ~200k.
+- Hardening: `SmartAccount.withdrawDepositTo` (solo EntryPoint) — SWC-105.
+- `doc/GAS.md` + `doc/SWC-AUDIT.md` (matriz SWC-100–136, estilo módulo 11): **0 vulnerabilidades**; 6 informativos.
+- **98 PASS** total (`forge test`).
 
 ---
 
@@ -296,7 +318,7 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 - [x] Custom errors del módulo.
 - [x] Sin floating pragma; NatSpec en APIs públicas.
 - [x] Suite unauthorized + fuzz.
-- [ ] Gas profiling + (Fase 6) SWC-AUDIT.
+- [x] Gas profiling + (Fase 6) SWC-AUDIT.
 
 ---
 
@@ -304,29 +326,32 @@ Ampliar solo si hace falta (p. ej. `ZeroAddress()`, `PaymasterExpired()`, `Insuf
 
 | Archivo | Contenido |
 |---------|-----------|
+| `README.md` | Índice de esta carpeta |
 | `planificacion.md` | Este documento (fases + gates) |
 | `diagrama-de-clases.md` | Estructura y relaciones entre contratos |
 | `diagrama-de-flujo.md` | Flujos de decisión (validación, paymaster, ejecución) |
 | `flujograma.md` | Flujos actor–sistema extremo a extremo |
-| `SWC-AUDIT.md` | Matriz SWC (Fase 6) |
-| `GAS.md` | Optimizaciones y benchmarks (Fase 6) |
+| `SWC-AUDIT.md` | Matriz SWC-100–136 |
+| `GAS.md` | Optimizaciones y benchmarks |
+
+README raíz del módulo: `../README.md`.
 
 ---
 
 ## 11. Criterios de aceptación del módulo
 
-1. Compila con `pragma solidity 0.8.24`.
-2. Account + Paymaster operativos vía EntryPoint con tests e2e.
-3. Caller != EntryPoint no puede validar ni ejecutar.
-4. Firma inválida y paymaster inválido revierten con custom errors.
-5. Fuzz de targets/calldata/depósitos en verde.
-6. Gas profiling documentado (UserOp vs EOA).
-7. NatSpec + custom errors en APIs públicas.
-
+1. [x] Compila con `pragma solidity 0.8.24`.
+2. [x] Account + Paymaster operativos vía EntryPoint con tests e2e.
+3. [x] Caller != EntryPoint no puede validar ni ejecutar.
+4. [x] Firma inválida y paymaster inválido revierten / fallan con custom errors (o `SIG_VALIDATION_FAILED` / FailedOp EP).
+5. [x] Fuzz de targets/calldata/depósitos en verde.
+6. [x] Gas profiling documentado (UserOp vs EOA).
+7. [x] NatSpec + custom errors en APIs públicas.
+8. [x] `doc/SWC-AUDIT.md` sin vulnerabilidades en alcance v1.
 ---
 
 ## 12. Próximo paso
 
-**Autorizar Fase 6** (gas profiling + Deploy + NatSpec / SWC hardening).
+**Módulo v1 completo (Fases 0–6).** Posibles extensiones: account factory, guardians/recovery, VerifyingPaymaster con firma off-chain, timelock en owner del PM, invariantes Foundry.
 
 **Nota:** usa `~/.foundry/bin/forge` (o antepón `$HOME/.foundry/bin` al `PATH`); el `forge` de nvm/npm no es Foundry.

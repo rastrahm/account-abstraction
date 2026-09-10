@@ -1,6 +1,6 @@
 # Flujograma — Ciclo completo ERC-4337 (Account + Paymaster)
 
-Flujo extremo a extremo entre actores y contratos: construcción de UserOp, firma, validación, ejecución y liquidación de gas.
+Flujo extremo a extremo entre actores y contratos (módulo 12, **v1 final**): construcción de UserOp, firma, validación, ejecución y liquidación de gas.
 
 ## Actores
 
@@ -116,12 +116,14 @@ sequenceDiagram
 
 ## Trazabilidad con fases
 
-| Tramo del flujograma | Fase |
-|----------------------|------|
-| Setup EP + carpetas + deps | 0 |
-| Struct UserOp + hash + interfaces | 1 |
-| Firma ECDSA | 2 |
-| Account validate + execute | 3 |
-| Paymaster validate + postOp + deposit | 4 |
-| E2E + unauthorized + fuzz | 5 |
-| Gas vs EOA + Deploy + SWC | 6 |
+| Tramo del flujograma | Fase | Estado |
+|----------------------|------|--------|
+| Setup EP + carpetas + deps | 0 | ✅ |
+| Struct UserOp + hash + interfaces | 1 | ✅ |
+| Firma ECDSA | 2 | ✅ |
+| Account validate + execute | 3 | ✅ |
+| Paymaster validate + postOp + deposit | 4 | ✅ |
+| E2E + unauthorized + fuzz | 5 | ✅ |
+| Gas vs EOA + Deploy + SWC | 6 | ✅ |
+
+**Módulo v1 completo.**

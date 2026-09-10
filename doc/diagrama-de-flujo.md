@@ -1,6 +1,6 @@
 # Diagrama de flujo — Validación, Paymaster y ejecución
 
-Flujos de decisión internos del sistema Account Abstraction (módulo 12).
+Flujos de decisión internos del sistema Account Abstraction (módulo 12, **v1 final**).
 
 ## 1. `validateUserOp` en SmartAccount
 
@@ -94,4 +94,4 @@ flowchart LR
     Y -->|No| NO[OnlyEntryPoint]
 ```
 
-Aplica a: `validateUserOp`, `execute`/`executeBatch`, `validatePaymasterUserOp`, `postOp`.
+Aplica a: `validateUserOp`, `execute`/`executeBatch`, `withdrawDepositTo`, `validatePaymasterUserOp`, `postOp`.
