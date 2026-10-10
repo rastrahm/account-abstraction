@@ -1,5 +1,7 @@
 # Diagrama de flujo — Validación, Paymaster y ejecución
 
+🇪🇸 Español · [🇬🇧 English](./diagrama-de-flujo-EN.md)
+
 Flujos de decisión internos del sistema Account Abstraction (módulo 12, **v1 final**).
 
 ## 1. `validateUserOp` en SmartAccount

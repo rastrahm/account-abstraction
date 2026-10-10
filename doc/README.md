@@ -1,19 +1,19 @@
-# Documentación — Módulo 12: Account Abstraction (ERC-4337)
+# Documentation / Documentación — Module 12: Account Abstraction (ERC-4337)
 
-Índice de la carpeta `doc/`. **Proyecto completo** (contratos + seguridad + gas).
+| | Index / Índice |
+|--|----------------|
+| 🇬🇧 English | [README-EN.md](./README-EN.md) |
+| 🇪🇸 Español | [README-ES.md](./README-ES.md) |
 
-| Documento | Contenido |
-|-----------|-----------|
-| [planificacion.md](./planificacion.md) | Objetivo, alcance, fases TDD, gates, criterios |
-| [diagrama-de-clases.md](./diagrama-de-clases.md) | UML: Account, Paymaster, EntryPoint, libs |
-| [diagrama-de-flujo.md](./diagrama-de-flujo.md) | Flujos validateUserOp / paymaster / execute |
-| [flujograma.md](./flujograma.md) | Ciclo e2e Build → Sign → handleOps → Settle |
-| [SWC-AUDIT.md](./SWC-AUDIT.md) | Matriz SWC-100–136, mapeo a tests |
-| [GAS.md](./GAS.md) | Baseline EOA vs UserOp, snapshot, opts |
+| Topic / Tema | 🇬🇧 English | 🇪🇸 Español |
+|--------------|------------|------------|
+| Planning / Planificación | [planificacion-EN.md](./planificacion-EN.md) | [planificacion-ES.md](./planificacion-ES.md) |
+| Decisions & logic / Decisiones y lógica | [DECISIONES-Y-LOGICA-EN.md](./DECISIONES-Y-LOGICA-EN.md) | [DECISIONES-Y-LOGICA-ES.md](./DECISIONES-Y-LOGICA-ES.md) |
+| Class diagram / Diagrama de clases | [diagrama-de-clases-EN.md](./diagrama-de-clases-EN.md) | [diagrama-de-clases-ES.md](./diagrama-de-clases-ES.md) |
+| Flow diagram / Diagrama de flujo | [diagrama-de-flujo-EN.md](./diagrama-de-flujo-EN.md) | [diagrama-de-flujo-ES.md](./diagrama-de-flujo-ES.md) |
+| End-to-end flowchart / Flujograma | [flujograma-EN.md](./flujograma-EN.md) | [flujograma-ES.md](./flujograma-ES.md) |
+| SWC audit / Auditoría SWC | [SWC-AUDIT-EN.md](./SWC-AUDIT-EN.md) | [SWC-AUDIT-ES.md](./SWC-AUDIT-ES.md) |
+| Gas | [GAS-EN.md](./GAS-EN.md) | [GAS-ES.md](./GAS-ES.md) |
+| Social posts / Redes | [SOCIAL-EN.md](./SOCIAL-EN.md) | [SOCIAL-ES.md](./SOCIAL-ES.md) |
 
-**Estado:** Fases **0–6** ✅ (módulo cerrado v1).
-
-**Contratos:** `SmartAccount` · `SponsoringPaymaster` · `SignatureValidator` · `UserOperationLib` · `ValidationDataLib`  
-**Estándar:** ERC-4337 **v0.7** · **Tests:** `forge test` → **98 PASS** · incl. e2e / unauthorized / fuzz / gas
-
-README del proyecto: [`../README.md`](../README.md)
+Project / Proyecto: [`../README.md`](../README.md)

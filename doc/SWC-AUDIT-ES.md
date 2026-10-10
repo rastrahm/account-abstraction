@@ -1,5 +1,7 @@
 # Auditoría SWC — Account Abstraction (ERC-4337)
 
+🇪🇸 Español · [🇬🇧 English](./SWC-AUDIT-EN.md)
+
 Verificación de Smart Account, Signature Validator y Sponsoring Paymaster contra el [SWC Registry](https://swcregistry.io/) (EIP-1470) y principios del monorepo (custom errors, pragma fijo, EntryPoint-only auth, ECDSA).
 
 > **Nota:** El SWC Registry no se mantiene activamente desde ~2020. Complementar con [SCSVS](https://github.com/ComposableSecurity/SCSVS), [EEA EthTrust](https://entethalliance.org/specs/ethtrust/) y la [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) security considerations.
@@ -17,8 +19,8 @@ Verificación de Smart Account, Signature Validator y Sponsoring Paymaster contr
 **Fecha:** 2026-09-10  
 **Referencia tests:** `test/SmartAccount.t.sol`, `test/SponsoringPaymaster.t.sol`, `test/SignatureValidator.t.sol`,  
 `test/UserOpE2E.t.sol`, `test/UnauthorizedSender.t.sol`, `test/fuzz/`, `test/gas/`  
-**Estilo:** alineado a [`11-upgradeable-proxies/doc/SWC-AUDIT.md`](../../11-upgradeable-proxies/doc/SWC-AUDIT.md)  
-**Índice docs:** [`README.md`](./README.md) · README módulo: [`../README.md`](../README.md)
+**Estilo:** alineado a [`11-upgradeable-proxies/doc/SWC-AUDIT-ES.md`](../../11-upgradeable-proxies/doc/SWC-AUDIT-ES.md)  
+**Índice docs:** [`README-ES.md`](./README-ES.md) · README módulo: [`../README-ES.md`](../README-ES.md)
 
 ---
 
@@ -139,7 +141,7 @@ Alineado a eth-infinitism `BaseAccount._payPrefund`. El EntryPoint es quien veri
 | Attack suite | ✅ | `test/UnauthorizedSender.t.sol` |
 | Sin floating pragma | ✅ | `0.8.24` |
 | Sin ETH `transfer`/`send` | ✅ | Solo `.call{value}` |
-| Gas profiling UserOp vs EOA | ✅ | `doc/GAS.md` |
+| Gas profiling UserOp vs EOA | ✅ | `doc/GAS-ES.md` |
 
 ---
 
@@ -160,7 +162,7 @@ Alineado a eth-infinitism `BaseAccount._payPrefund`. El EntryPoint es quien veri
 | 1 | `withdrawDepositTo` (solo EP) | SWC-105 — retiro de depósito sin path no autenticado |
 | 2 | `script/Deploy.s.sol` | Deploy reproducible + funding |
 | 3 | `test/gas/UserOp.gas.t.sol` + `.gas-snapshot` | Overhead vs EOA |
-| 4 | `doc/SWC-AUDIT.md` / `doc/GAS.md` | Matriz SWC-100–136 + benchmarks |
+| 4 | `doc/SWC-AUDIT-ES.md` / `doc/GAS-ES.md` | Matriz SWC-100–136 + benchmarks |
 
 ### Observaciones no bloqueantes (v2)
 
@@ -216,6 +218,6 @@ Total: 98 PASS / 0 FAIL / 0 SKIP
 - [EIP-1470](https://eips.ethereum.org/EIPS/eip-1470)
 - [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337)
 - [eth-infinitism/account-abstraction v0.7](https://github.com/eth-infinitism/account-abstraction)
-- Módulo 11: [`11-upgradeable-proxies/doc/SWC-AUDIT.md`](../../11-upgradeable-proxies/doc/SWC-AUDIT.md)
-- Gas: [`GAS.md`](./GAS.md)
-- Plan: [`planificacion.md`](./planificacion.md)
+- Módulo 11: [`11-upgradeable-proxies/doc/SWC-AUDIT-ES.md`](../../11-upgradeable-proxies/doc/SWC-AUDIT-ES.md)
+- Gas: [`GAS-ES.md`](./GAS-ES.md)
+- Plan: [`planificacion-ES.md`](./planificacion-ES.md)
