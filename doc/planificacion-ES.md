@@ -1,5 +1,7 @@
 # Planificación — Módulo 12: Account Abstraction (ERC-4337)
 
+🇪🇸 Español · [🇬🇧 English](./planificacion-EN.md)
+
 **Estado:** Fases **0–6** ✅ completadas. Módulo cerrado a nivel de planificación v1.  
 **Regla de avance:** cada fase requiere **autorización explícita** del responsable antes de empezar.
 
@@ -57,15 +59,19 @@ Construir un stack ERC-4337 de nivel producción con:
 
 ```
 12-account-abstraction/
-├── README.md
+├── README.md                         # índice bilingüe
+├── README-ES.md / README-EN.md
 ├── doc/
-│   ├── README.md                     # índice de documentación
-│   ├── planificacion.md
-│   ├── diagrama-de-clases.md
-│   ├── diagrama-de-flujo.md
-│   ├── flujograma.md
-│   ├── SWC-AUDIT.md
-│   └── GAS.md
+│   ├── README.md                     # índice bilingüe de documentación
+│   ├── README-{ES,EN}.md
+│   ├── planificacion-{ES,EN}.md
+│   ├── DECISIONES-Y-LOGICA-{ES,EN}.md
+│   ├── diagrama-de-clases-{ES,EN}.md
+│   ├── diagrama-de-flujo-{ES,EN}.md
+│   ├── flujograma-{ES,EN}.md
+│   ├── SWC-AUDIT-{ES,EN}.md
+│   ├── GAS-{ES,EN}.md
+│   └── SOCIAL-{ES,EN}.md
 ├── src/
 │   ├── account/SmartAccount.sol
 │   ├── paymaster/SponsoringPaymaster.sol
@@ -281,7 +287,7 @@ Ampliar solo si hace falta, siempre como custom errors.
 
 1. `script/Deploy.s.sol` (Account + Paymaster + funding EP).
 2. `test/gas/UserOp.gas.t.sol`: overhead UserOp vs tx ECDSA EOA (órdenes de magnitud / deltas).
-3. NatSpec completo; `doc/SWC-AUDIT.md` y `doc/GAS.md` al estilo de módulos previos.
+3. NatSpec completo; `doc/SWC-AUDIT-ES.md` y `doc/GAS-ES.md` al estilo de módulos previos.
 
 **Criterio de salida:** deploy local reproducible + docs de seguridad + gas documentado.
 
@@ -289,7 +295,7 @@ Ampliar solo si hace falta, siempre como custom errors.
 - `script/Deploy.s.sol` — EntryPoint (o `ENTRY_POINT` env), SmartAccount, SponsoringPaymaster, whitelist + depósitos.
 - `test/gas/UserOp.gas.t.sol` + `.gas-snapshot` — EOA ~55k vs UserOp ~160k vs UserOp+PM ~200k.
 - Hardening: `SmartAccount.withdrawDepositTo` (solo EntryPoint) — SWC-105.
-- `doc/GAS.md` + `doc/SWC-AUDIT.md` (matriz SWC-100–136, estilo módulo 11): **0 vulnerabilidades**; 6 informativos.
+- `doc/GAS-ES.md` + `doc/SWC-AUDIT-ES.md` (matriz SWC-100–136, estilo módulo 11): **0 vulnerabilidades**; 6 informativos.
 - **98 PASS** total (`forge test`).
 
 ---
@@ -326,15 +332,20 @@ Ampliar solo si hace falta, siempre como custom errors.
 
 | Archivo | Contenido |
 |---------|-----------|
-| `README.md` | Índice de esta carpeta |
-| `planificacion.md` | Este documento (fases + gates) |
-| `diagrama-de-clases.md` | Estructura y relaciones entre contratos |
-| `diagrama-de-flujo.md` | Flujos de decisión (validación, paymaster, ejecución) |
-| `flujograma.md` | Flujos actor–sistema extremo a extremo |
-| `SWC-AUDIT.md` | Matriz SWC-100–136 |
-| `GAS.md` | Optimizaciones y benchmarks |
+| `README.md` | Índice bilingüe de esta carpeta |
+| `README-ES.md` | Índice en español |
+| `planificacion-ES.md` | Este documento (fases + gates) |
+| `DECISIONES-Y-LOGICA-ES.md` | Decisiones técnicas, lógica y mejoras de gas |
+| `diagrama-de-clases-ES.md` | Estructura y relaciones entre contratos |
+| `diagrama-de-flujo-ES.md` | Flujos de decisión (validación, paymaster, ejecución) |
+| `flujograma-ES.md` | Flujos actor–sistema extremo a extremo |
+| `SWC-AUDIT-ES.md` | Matriz SWC-100–136 |
+| `GAS-ES.md` | Optimizaciones y benchmarks |
+| `SOCIAL-ES.md` | Borradores para redes |
 
-README raíz del módulo: `../README.md`.
+Cada documento tiene su versión en inglés con sufijo `-EN.md`.
+
+README raíz del módulo: `../README-ES.md` (índice: `../README.md`).
 
 ---
 
@@ -347,7 +358,7 @@ README raíz del módulo: `../README.md`.
 5. [x] Fuzz de targets/calldata/depósitos en verde.
 6. [x] Gas profiling documentado (UserOp vs EOA).
 7. [x] NatSpec + custom errors en APIs públicas.
-8. [x] `doc/SWC-AUDIT.md` sin vulnerabilidades en alcance v1.
+8. [x] `doc/SWC-AUDIT-ES.md` sin vulnerabilidades en alcance v1.
 ---
 
 ## 12. Próximo paso

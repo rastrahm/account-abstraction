@@ -1,5 +1,7 @@
 # Flujograma — Ciclo completo ERC-4337 (Account + Paymaster)
 
+🇪🇸 Español · [🇬🇧 English](./flujograma-EN.md)
+
 Flujo extremo a extremo entre actores y contratos (módulo 12, **v1 final**): construcción de UserOp, firma, validación, ejecución y liquidación de gas.
 
 ## Actores

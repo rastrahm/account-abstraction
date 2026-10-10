@@ -1,5 +1,7 @@
 # Optimización de gas — Account Abstraction (ERC-4337)
 
+🇪🇸 Español · [🇬🇧 English](./GAS-EN.md)
+
 Regenerar:
 
 ```bash
@@ -82,4 +84,4 @@ forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadc
 
 Ver `script/Deploy.s.sol` para env (`ENTRY_POINT`, depósitos, owner).
 
-README: [`../README.md`](../README.md) · Índice docs: [`README.md`](./README.md)
+README: [`../README-ES.md`](../README-ES.md) · Índice docs: [`README-ES.md`](./README-ES.md)

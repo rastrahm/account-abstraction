@@ -1,8 +1,10 @@
-# Diagrama de clases — Account Abstraction (ERC-4337)
+# Class diagram — Account Abstraction (ERC-4337)
 
-Vista estructural de contratos, interfaces y relaciones (módulo 12, **v1 final**).
+[🇪🇸 Español](./diagrama-de-clases-ES.md) · 🇬🇧 English
 
-## Diagrama (Mermaid)
+Structural view of contracts, interfaces and relationships (module 12, **final v1**).
+
+## Diagram (Mermaid)
 
 ```mermaid
 classDiagram
@@ -112,22 +114,22 @@ classDiagram
 
 ---
 
-## Relaciones clave
+## Key relationships
 
-| Relación | Tipo | Nota |
-|----------|------|------|
-| `SmartAccount` → `IAccount` | implementación | Cuenta ERC-4337 v0.7 |
-| `SponsoringPaymaster` → `IPaymaster` | implementación | Patrocinio de gas |
-| Account / Paymaster → `IEntryPoint` | auth + deps | Solo EntryPoint invoca validate/execute/postOp |
-| `SmartAccount` → `SignatureValidator` | library | ECDSA sobre `userOpHash` |
-| `UserOperationLib` → EntryPoint hash | compatibilidad | `getUserOpHash` ≡ EP |
+| Relationship | Type | Note |
+|--------------|------|------|
+| `SmartAccount` → `IAccount` | implementation | ERC-4337 v0.7 account |
+| `SponsoringPaymaster` → `IPaymaster` | implementation | Gas sponsorship |
+| Account / Paymaster → `IEntryPoint` | auth + deps | Only the EntryPoint invokes validate/execute/postOp |
+| `SmartAccount` → `SignatureValidator` | library | ECDSA over `userOpHash` |
+| `UserOperationLib` → EntryPoint hash | compatibility | `getUserOpHash` ≡ EP |
 
 ---
 
-## Notas de diseño (v1)
+## Design notes (v1)
 
-- `entryPoint` y `owner` (cuenta) / `entryPoint` (PM) son **immutable**.
+- `entryPoint` and `owner` (account) / `entryPoint` (PM) are **immutable**.
 - Spec: **ERC-4337 v0.7** — `PackedUserOperation`.
-- `SignatureValidator` es **library** (sin estado).
-- Errores: `OnlyEntryPoint`, `ExecutionFailed`, `InvalidUserOpSignature`, `PaymasterValidationFailed`, `ZeroAddress`, `InvalidBatchLength`.
+- `SignatureValidator` is a **library** (stateless).
+- Errors: `OnlyEntryPoint`, `ExecutionFailed`, `InvalidUserOpSignature`, `PaymasterValidationFailed`, `ZeroAddress`, `InvalidBatchLength`.
 - Paymaster admin: OpenZeppelin `Ownable2Step`.
